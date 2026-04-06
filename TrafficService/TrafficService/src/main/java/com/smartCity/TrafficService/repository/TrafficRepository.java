@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TrafficRepository extends JpaRepository<TrafficRepository, Long> {
+public interface TrafficRepository extends JpaRepository<TrafficReading, Long> {
 
     // Latest reading for each sensor
     @Query("SELECT t FROM TrafficReading t WHERE t.timestamp = " +
