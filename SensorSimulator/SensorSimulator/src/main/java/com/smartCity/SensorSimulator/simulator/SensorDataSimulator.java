@@ -1,5 +1,6 @@
 package com.smartCity.SensorSimulator.simulator;
 
+import com.smartCity.SensorSimulator.model.TrafficSensorData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -10,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -44,8 +46,23 @@ public class SensorDataSimulator {
 
     @Scheduled(fixedDelay = 3000)
     public void simulateTrafficSensors(){
+        CompletableFuture.runAsync(() -> {
+            TRAFFIC_LOCATIONS.forEach(location -> {
+                TrafficSensorData data = generateTrafficData(location);
+                KafkaTemplate.send("traffic-sensor-data",
+                        data.getSensorId(), data);
+                log.info("[TRAFFIC] {} → vehicles: {}, speed: {} km/h, congestion: {}",
+                        location, data.getVehicleCount(),
+                        String.format("%.1f", data.getAvgSpeed()),
+                        data.getCongestionLevel());
+            });
+        }, sensorThreadPool);
+    }
 
+    public void simulateAirQualitySensors(){
+      CompletableFuture.runAsync(() -> {
 
+      } )
     }
 
 
