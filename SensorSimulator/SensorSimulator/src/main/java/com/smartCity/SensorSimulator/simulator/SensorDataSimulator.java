@@ -1,6 +1,7 @@
 package com.smartCity.SensorSimulator.simulator;
 
 import com.smartCity.SensorSimulator.model.AirQualitySensorData;
+import com.smartCity.SensorSimulator.model.ParkingSensorData;
 import com.smartCity.SensorSimulator.model.TrafficSensorData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -36,6 +38,13 @@ public class SensorDataSimulator {
             "Connaught Place", "Karol Bagh", "Lajpat Nagar",
             "Dwarka Sector 21", "Nehru Place", "Chandni Chowk"
     );
+
+    private static final List<String[]> PARKING_ZONES = Arrays.asList(
+            new String[]{"ZONE-A", "Connaught Place"},
+            new String[]{"ZONE-B", "Karol Bagh"},
+            new String[]{"ZONE-C", "Lajpat Nagar"}
+    );
+
 
     private static final List<String> AIR_LOCATIONS = Arrays.asList(
             "Anand Vihar", "RK Puram", "Punjabi Bagh",
@@ -76,7 +85,28 @@ public class SensorDataSimulator {
       } , sensorThreadPool);
     }
 
+    @Scheduled(fixedDelay = 8000)
+    public void simulateParkingSensors(){
+        CompletableFuture.runAsync(() -> {
+            String[] zone = PARKING_ZONES.get(random.nextInt(PARKING_ZONES.size()));
+            String slotNum = SLOT_NUMBERS[random.nextInt(SLOT_NUMBERS.length)];
+            boolean isOccupied = random.nextBoolean();
 
+            ParkingSensorData data = ParkingSensorData.builder()
+                    .sensorId("PARK-" + zone[0] + "-" + slotNum)
+                    .zoneId(zone[0])
+                    .slotNumber(zone[0].replace("ZONE-", "") + "-" +slotNum)
+                    .location(zone[1])
+                    .occupied(isOccupied)
+                    .vehicleNumber(isOccupied ? "VEHICLE_IN" : "VEHICLE_OUT")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            KafkaTemplate.send("parking-sensor-data", data.getSensorId(), data);
+            log.info("[PARKING] {} slot {} → {}",
+                    zone[1], data.getSlotNumber(), data.getEventType());
+        }, sensorThreadPool);
+    }
 
 
 }
