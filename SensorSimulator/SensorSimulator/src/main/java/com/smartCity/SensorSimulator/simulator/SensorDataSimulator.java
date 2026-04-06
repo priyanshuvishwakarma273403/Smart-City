@@ -8,12 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,7 +57,7 @@ public class SensorDataSimulator {
         CompletableFuture.runAsync(() -> {
             TRAFFIC_LOCATIONS.forEach(location -> {
                 TrafficSensorData data = generateTrafficData(location);
-                KafkaTemplate.send("traffic-sensor-data",
+                kafkaTemplate.send("traffic-sensor-data",
                         data.getSensorId(), data);
                 log.info("[TRAFFIC] {} → vehicles: {}, speed: {} km/h, congestion: {}",
                         location, data.getVehicleCount(),
@@ -74,7 +72,7 @@ public class SensorDataSimulator {
       CompletableFuture.runAsync(() -> {
           AIR_LOCATIONS.forEach(location -> {
               AirQualitySensorData data = generateAirQualityData(location);
-              KafkaTemplate.send("airquality-sensor-data",
+              kafkaTemplate.send("airquality-sensor-data",
                       data.getSensorId(), data);
               log.info("[AIR] {} → AQI: {}, PM2.5: {}, quality: {}",
                       location, data.getAqi(),
@@ -102,7 +100,7 @@ public class SensorDataSimulator {
                     .timestamp(LocalDateTime.now())
                     .build();
 
-            KafkaTemplate.send("parking-sensor-data", data.getSensorId(), data);
+            kafkaTemplate.send("parking-sensor-data", data.getSensorId(), data);
             log.info("[PARKING] {} slot {} → {}",
                     zone[1], data.getSlotNumber(), data.getEventType());
         }, sensorThreadPool);
@@ -138,7 +136,6 @@ public class SensorDataSimulator {
         if(vehicles > 150 || speed < 10) return "CRITICAL";
         if(vehicles > 100 || speed <20) return "HIGH";
         if(vehicles > 50 || speed < 40) return "MEDIUM";
-
         return "LOW";
     }
 
