@@ -11,6 +11,5 @@ public class SensorSimulatorApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SensorSimulatorApplication.class, args);
 	}
-
 }
 
