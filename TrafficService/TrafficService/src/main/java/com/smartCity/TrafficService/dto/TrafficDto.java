@@ -57,6 +57,16 @@ public class TrafficDto {
         private LocalDateTime generatedAt;
     }
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class LocationStat{
+        private String location;
+        private double avgSpeed;
+        private double avgVehicleCount;
+        private String status;
 
+    }
 
 }
