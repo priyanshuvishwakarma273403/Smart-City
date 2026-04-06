@@ -142,7 +142,43 @@ public class SensorDataSimulator {
         return "LOW";
     }
 
+    private AirQualitySensorData generateAirQualityData(String location){
 
+        int aqi = 50 + random.nextInt(400);
+        double pm25 = 10 + random.nextDouble() * 200;
+        double pm10 =pm25 * 1.5 + random.nextDouble() * 50;
+        double co2 = 400 + random.nextDouble() * 600;
+        String label = aqiLabel(aqi);
 
+        return AirQualitySensorData.builder()
+                .sensorId("AIR-" +location.replaceAll("\\s+", "").toUpperCase().substring(0, 4)
+                        + "-" + String.format("%03d",random.nextInt(999)))
+                .location(location)
+                .aqi(aqi)
+                .pm25(Math.round(pm25 * 10.0) / 10.0)
+                .pm10(Math.round(pm10 * 10.0) / 10.0)
+                .co2(Math.round(co2 * 10.0) / 10.0)
+                .qualityLabel(label)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    private String aqiLabel(int aqi){
+        if(aqi <= 50) return "GOOD";
+        if(aqi <= 100) return "MODERATE";
+        if(aqi <= 200) return "UNHEALTHY";
+        if(aqi <= 300) return "VERY_UNHEALTHY";
+        return "HAZARDOUS";
+    }
+
+    private String generateVehicleNumber(){
+        String[] states = {"DL", "UP", "HR", "MH", "RJ"};
+        String state = states[random.nextInt(states.length)];
+        int district = 1 + random.nextInt(99);
+        char c1 = (char) ('A' + random.nextInt(26));
+        char c2 = (char) ('A' + random.nextInt(26));
+        int num = 1000 + random.nextInt(9000);
+        return String.format("%s%02d%c%c%d", state, district, c1, c2, num);
+    }
 
 }
