@@ -108,5 +108,41 @@ public class SensorDataSimulator {
         }, sensorThreadPool);
     }
 
+    private TrafficSensorData generateTrafficData(String location){
+
+        int hour = LocalDateTime.now().getHour();
+        boolean isPeakHour  = (hour >= 8 && hour <= 10) || (hour >= 17 && hour <= 20);
+
+        int vehicleCount = isPeakHour
+                ? 80 + random.nextInt(120)
+                : 10 + random.nextInt(60);
+
+        double avgSpeed = isPeakHour
+                ? 5 + random.nextDouble() * 25
+                : 30 + random.nextDouble() * 40;
+
+        String congestion = calculateCongestion(vehicleCount, avgSpeed);
+
+        return TrafficSensorData.builder()
+                .sensorId("TRAF-" + location.replaceAll("\\s+", "").toUpperCase().substring(0, 4)
+                +"-" + String.format("%03",random.nextInt(999)))
+                .location(location)
+                .vehicleCount(vehicleCount)
+                .avgSpeed(Math.round(avgSpeed * 10.0) / 10.0)
+                .congestionLevel(congestion)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    private String calculateCongestion(int vehicles, double speed){
+        if(vehicles > 150 || speed < 10) return "CRITICAL";
+        if(vehicles > 100 || speed <20) return "HIGH";
+        if(vehicles > 50 || speed < 40) return "MEDIUM";
+
+        return "LOW";
+    }
+
+
+
 
 }
