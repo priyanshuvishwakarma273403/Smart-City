@@ -1,5 +1,6 @@
 package com.smartCity.SensorSimulator.simulator;
 
+import com.smartCity.SensorSimulator.model.AirQualitySensorData;
 import com.smartCity.SensorSimulator.model.TrafficSensorData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,11 +60,23 @@ public class SensorDataSimulator {
         }, sensorThreadPool);
     }
 
+    @Scheduled(fixedDelay = 5000)
     public void simulateAirQualitySensors(){
       CompletableFuture.runAsync(() -> {
+          AIR_LOCATIONS.forEach(location -> {
+              AirQualitySensorData data = generateAirQualityData(location);
+              KafkaTemplate.send("airquality-sensor-data",
+                      data.getSensorId(), data);
+              log.info("[AIR] {} → AQI: {}, PM2.5: {}, quality: {}",
+                      location, data.getAqi(),
+                      String.format("%.1f", data.getPm25()),
+                      data.getQualityLabel());
+          });
 
-      } )
+      } , sensorThreadPool);
     }
+
+
 
 
 }
